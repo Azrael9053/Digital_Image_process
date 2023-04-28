@@ -18,6 +18,7 @@
 
 #include "bmp.h"
 #include "img_process.h"
+#include "matrix_calculate.h"
 
 using namespace std;
 
@@ -31,7 +32,6 @@ int b[MaxBMPSizeX][MaxBMPSizeY];
 
 int main(int argc, char *argv[]) {
     int width, height;
-    int i, j;
 
     open_bmp("./test images/lena_pepper_and_salt_noise10%.bmp", R, R, R, width, height); // for gray images
     Adaptive_median_filtering(R, width, height, 11);

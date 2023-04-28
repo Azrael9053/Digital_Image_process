@@ -78,17 +78,20 @@ void Perspective_Transformation(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[M
             H[1][0] = d0 - g0 * v;
             H[1][1] = e0 - h0 * v;
             H[1][2] = f0;
-            H[2][0] = 1;
+            H[2][2] = 1;
+            p_uv[0] = u;
+            p_uv[1] = v;
+            p_uv[2] = 1;
             if (!inverse(H, H_inv)) {
                 cout << "inverse failed" << endl;
                 return;
             }
             for (i = 0; i < 3; i++) {
-                p_xy[i] = 1;
+                p_xy[i] = 0;
             }
             for (i = 0; i < 3; i++) {
                 for (j = 0; j < 3; j++) {
-                    p_xy[i] *= H_inv[j][i] * p_uv[j];
+                    p_xy[i] += H_inv[i][j] * p_uv[j];
                 }
             }
             x = p_xy[0];

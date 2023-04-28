@@ -36,7 +36,7 @@ void getCofactor(double A[ROW][COL], double temp[ROW][COL], int p, int q,
    n is current dimension of A[][]. */
 double determinant(double A[ROW][COL], int n)
 {
-    int D = 0; // Initialize result
+    double D = 0; // Initialize result
 
     //  Base case : if matrix contains single element
     if (n == 1)
@@ -94,7 +94,7 @@ bool inverse(double A[ROW][COL], double inverse[ROW][COL])
     // Find determinant of A[][]
     double det = determinant(A, N);
     if (det == 0) {
-        cout << "Singular matrix, can't find its inverse";
+        cout << "Singular matrix, can't find its inverse" << endl;
         return false;
     }
 
