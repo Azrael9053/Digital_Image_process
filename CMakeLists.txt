@@ -3,4 +3,4 @@ project(Digital_Image_process)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(Digital_Image_process main.cpp bmp.h bmp.cpp img_process.h img_process.cpp)
+add_executable(Digital_Image_process main.cpp bmp.h bmp.cpp img_process.h img_process.cpp matrix_calculate.h matrix_calculate.cpp)

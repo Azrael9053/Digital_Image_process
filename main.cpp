@@ -29,41 +29,23 @@ int g[MaxBMPSizeX][MaxBMPSizeY];
 int b[MaxBMPSizeX][MaxBMPSizeY];
 
 
-
 int main(int argc, char *argv[]) {
     int width, height;
     int i, j;
 
-    // 開啟並讀取全彩(24bits)bmp 影像圖檔
-    // RGB 三個 channel 的值存入 R, G, B 三個自訂的陣列中
-    // 陣列大小不得大於 1024x1024 (目前設定)
-    // 若需要更大的影像size，可將bmp.h中的 MaxBMPSizeX 與 MaxBMPSizeY 重新設定
-    //open_bmp("lena.bmp", R, G, B, width, height); for true color images
     open_bmp("./test images/lena_pepper_and_salt_noise10%.bmp", R, R, R, width, height); // for gray images
-    // The starting pixel of a bmp image is at the bottom-left corner, which has
-    // coordinates x=0 and y=0.  The last pixel is at the top-right corner.
-
     Adaptive_median_filtering(R, width, height, 11);
-    /*----------------------------------------------------------------------------
-	      範例：產生數位負片（請將主程式放在此處）
-    ----------------------------------------------------------------------------*/
-//    for (j = height - 1; j > -1; j--) { // typical image scanning order
-//        for (i = 0; i < width; i++) {
-//            /* for (i=0; i < width; i++){
-//               for (j=0; j < height; j++){ */
-//            r[i][j] = 255 - R[i][j];
-//            //g[i][j] = 255-G[i][j];
-//            //b[i][j] = 255-B[i][j];
-//        } // r[0][0] is located at the bottom left corner.
-//    } // i: horizontal direction, j: vertical direction
-//    // 儲存處理結果至新的圖檔中
-//    //save_bmp("lenna_new1.bmp", r, g, b); // for true color images
-    save_bmp("./test images/test.bmp", r, r, r); // for gray images
+    save_bmp("./test images/denoise.bmp", r, r, r); // for gray images
+
+    open_bmp("./test images/lena_std.bmp", R, G, B, width, height); // for gray images
+    Perspective_Transformation(R, G, B, width, height);
+    save_bmp("./test images/Perspective_Transformation.bmp", r, g, b); // for gray images
+
     printf("Job Finished!\n");
 
     // 關閉 bmp 影像圖檔
     close_bmp();
 
-    system("PAUSE"); /* so that the command window holds a while */
+//    system("PAUSE"); /* so that the command window holds a while */
     return 0;
 }
