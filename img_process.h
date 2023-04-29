@@ -20,13 +20,25 @@
 #define g0 -0.0006
 #define h0 0.0005
 
+#define TH 90
+#define TL 65
+
 extern int r[MaxBMPSizeX][MaxBMPSizeY];
 extern int g[MaxBMPSizeX][MaxBMPSizeY];
 extern int b[MaxBMPSizeX][MaxBMPSizeY];
+extern int R[MaxBMPSizeX][MaxBMPSizeY];
+extern int G[MaxBMPSizeX][MaxBMPSizeY];
+extern int B[MaxBMPSizeX][MaxBMPSizeY];
+
+
+
 
 void Adaptive_median_filtering(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height, int MAX);
 
 void Perspective_Transformation(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[MaxBMPSizeX][MaxBMPSizeY],
                                 int bmp_b[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height);
+
+void canny_edge_detection(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[MaxBMPSizeX][MaxBMPSizeY],
+                          int bmp_b[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height);
 
 #endif //IMG_PROCESS_H

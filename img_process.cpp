@@ -11,6 +11,8 @@
 
 using namespace std;
 
+double Gradient_Angle[512][512] = {0};
+int max_gradient = 0;
 
 void Adaptive_median_filtering(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height, int MAX) {
     int value[MAX * MAX];
@@ -103,4 +105,153 @@ void Perspective_Transformation(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[M
             }
         }
     }
+}
+
+void gray_scale(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[MaxBMPSizeX][MaxBMPSizeY],
+                int bmp_b[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height) {
+    int i, j;
+    for (j = height - 1; j >= 0; j--) {
+        for (i = 0; i < width; i++) {
+            r[i][j] = (bmp_r[i][j] * 0.299 + bmp_g[i][j] * 0.587 + bmp_b[i][j] * 0.114);
+        }
+    }
+}
+
+void Gaussian_LPF(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height, double sigma, int MAX) {
+    int i, j, x, y, u, v;
+    double sum = 0;
+    double filter[MAX][MAX];
+
+    for (i = 0; i < MAX; i++) {
+        x = -((MAX) >> 1) + i;
+        for (j = 0; j < MAX; j++) {
+            y = -((MAX) >> 1) + j;
+            filter[i][j] = exp(-(x * x + y * y) / (2 * sigma * sigma));
+            sum += filter[i][j];
+        }
+    }
+    for (i = 0; i < MAX; i++) {
+        for (j = 0; j < MAX; j++) {
+            filter[i][j] /= sum;
+        }
+    }
+    for (j = height - 1; j >= 0; j--) {
+        for (i = 0; i < width; i++) {
+            sum = 0;
+            for (y = j + (MAX >> 1); y >= j - (MAX >> 1); y--) {
+                for (x = i - (MAX >> 1); x <= i + (MAX >> 1); x++) {
+                    if (x >= 0 and x < width and y >= 0 and y < height) {
+                        sum += bmp_r[x][y] * filter[x - i + (MAX >> 1)][y - j - (MAX >> 1)];
+                    } else {
+                        sum += bmp_r[i][j] * filter[x - i + (MAX >> 1)][y - j - (MAX >> 1)];
+                    }
+                }
+            }
+            R[i][j] = sum;
+        }
+    }
+}
+
+void sobel(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height) {
+    const double Sobel_mask[2][3][3] = {{{-1, 0,  1},  {-2, 0, 2}, {-1, 0, 1}},
+                                        {{-1, -2, -1}, {0,  0, 0}, {1,  2, 1}}};
+    int i, j, x, y, u, v;
+
+    for (j = height - 1; j >= 0; j--) {
+        for (i = 0; i < width; i++) {
+            x = 0;
+            y = 0;
+            for (v = -1; v <= 1; v++) {
+                for (u = -1; u <= 1; u++) {
+                    if (i + u >= 0 and i + u < width and j + v >= 0 and j + v < height) {
+                        x += bmp_r[i + u][j + v] * Sobel_mask[0][u + 1][v + 1];
+                        y += bmp_r[i + u][j + v] * Sobel_mask[1][u + 1][v + 1];
+                    }
+                }
+            }
+            r[i][j] = abs(x) + abs(y);
+            if (max_gradient < r[i][j]) {
+                max_gradient = r[i][j];
+            }
+            Gradient_Angle[i][j] = atan2(x, y) * 180.0 / M_PI;
+            Gradient_Angle[i][j] += 180.0 * (Gradient_Angle[i][j] < 0);
+        }
+    }
+}
+
+void Non_maximum_suppression(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height) {
+    int i, j, x, y;
+    double nearpoint[2];
+    for(i = 0; i < width; i++) {
+        for(j = 0; j < height; j++) {
+            R[i][j] = bmp_r[i][j];
+        }
+    }
+    for (j = height - 1; j >= 0; j--) {
+        for(i = 0; i < width; i++) {
+            if(bmp_r[i][j] > 0){
+                if(Gradient_Angle[i][j] < 22.5 or Gradient_Angle[i][j] > 157.5){
+                    if(i-1>0){
+                        nearpoint[0] = bmp_r[i-1][j];
+                    } else{
+                        nearpoint[0] = -1;
+                    }
+                    if(i+1<width){
+                        nearpoint[1] = bmp_r[i+1][j];
+                    } else{
+                        nearpoint[1] = -1;
+                    }
+                }
+                else if(Gradient_Angle[i][j] < 67.5 and Gradient_Angle[i][j] >= 22.5){
+                    if(i-1>0 and j-1>0){
+                        nearpoint[0] = bmp_r[i-1][j-1];
+                    } else{
+                        nearpoint[0] = -1;
+                    }
+                    if(i+1<width and j+1<height){
+                        nearpoint[1] = bmp_r[i+1][j+1];
+                    } else{
+                        nearpoint[1] = -1;
+                    }
+                }
+                else if(Gradient_Angle[i][j] < 112.5 and Gradient_Angle[i][j] >= 67.5){
+                    if(j-1>0){
+                        nearpoint[0] = bmp_r[i][j-1];
+                    } else{
+                        nearpoint[0] = -1;
+                    }
+                    if(j+1<height){
+                        nearpoint[1] = bmp_r[i][j+1];
+                    } else{
+                        nearpoint[1] = -1;
+                    }
+                }
+                else if(Gradient_Angle[i][j] < 157.5 and Gradient_Angle[i][j] >= 112.5){
+                    if(i-1>0 and j+1<height){
+                        nearpoint[0] = bmp_r[i-1][j+1];
+                    } else{
+                        nearpoint[0] = -1;
+                    }
+                    if(i+1<width and j-1>0){
+                        nearpoint[1] = bmp_r[i+1][j-1];
+                    } else{
+                        nearpoint[1] = -1;
+                    }
+                }
+                if(bmp_r[i][j] < nearpoint[0] or bmp_r[i][j] < nearpoint[1]){
+                    R[i][j] = 0;
+                }
+            }
+        }
+    }
+}
+
+void canny_edge_detection(int bmp_r[MaxBMPSizeX][MaxBMPSizeY], int bmp_g[MaxBMPSizeX][MaxBMPSizeY],
+                          int bmp_b[MaxBMPSizeX][MaxBMPSizeY], int &width, int &height) {
+
+    gray_scale(bmp_r, bmp_g, bmp_b, width, height);
+    Gaussian_LPF(r, width, height, 1.5, 3);
+    sobel(R, width, height);
+    Non_maximum_suppression(r, width, height);
+
 }
